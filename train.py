@@ -83,10 +83,10 @@ def valid(val_loader, network):
 			output = network(source_img).clamp_(-1, 1)		
 
 		mse_loss = F.mse_loss(output * 0.5 + 0.5, target_img * 0.5 + 0.5, reduction='none').mean((1, 2, 3))
-		wandb.log({"val_mse_loss": loss})
+		wandb.log({"val_mse_loss": mse_loss})
 		psnr = 10 * torch.log10(1 / mse_loss).mean()
 		PSNR.update(psnr.item(), source_img.size(0))
-		wandb.log({"val_psnr": loss})
+		wandb.log({"val_psnr": psnr})
 	return PSNR.avg
 
 
