@@ -1,20 +1,18 @@
-import os
 import argparse
 import json
+import os
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import wandb
-
+from tensorboardX import SummaryWriter
 from torch.cuda.amp import autocast, GradScaler
 from torch.utils.data import DataLoader
-from tensorboardX import SummaryWriter
 from tqdm import tqdm
 
-from utils import AverageMeter
 from datasets.loader import PairLoader
 from models import *
-
+from utils import AverageMeter
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--model', default='dehazeformer-s', type=str, help='model name')
@@ -33,131 +31,132 @@ args = parser.parse_args()
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
 
 if args.wandb:
-	wandb.init(
-		entity='10701',
-		settings=wandb.Settings(start_method="fork"),
-		project='Image Dehazing',
-		name=args.run_name,
-		config=args
-	)
+    wandb.init(
+        entity='10701',
+        settings=wandb.Settings(start_method="fork"),
+        project='Image Dehazing',
+        name=args.run_name,
+        config=args
+    )
 
 
 def train(train_loader, network, criterion, optimizer, scaler):
-	losses = AverageMeter()
+    losses = AverageMeter()
 
-	torch.cuda.empty_cache()
-	
-	network.train()
+    torch.cuda.empty_cache()
 
-	for batch in train_loader:
-		source_img = batch['source'].cuda()
-		target_img = batch['target'].cuda()
+    network.train()
 
-		with autocast(args.no_autocast):
-			output = network(source_img)
-			loss = criterion(output, target_img)
-			wandb.log({"loss": loss})
+    for batch in train_loader:
+        source_img = batch['source'].cuda()
+        target_img = batch['target'].cuda()
 
-		losses.update(loss.item())
+        with autocast(args.no_autocast):
+            output = network(source_img)
+            loss = criterion(output, target_img)
 
-		optimizer.zero_grad()
-		scaler.scale(loss).backward()
-		scaler.step(optimizer)
-		scaler.update()
+        losses.update(loss.item())
 
-	return losses.avg
+        optimizer.zero_grad()
+        scaler.scale(loss).backward()
+        scaler.step(optimizer)
+        scaler.update()
+
+    return losses.avg
 
 
 def valid(val_loader, network):
-	PSNR = AverageMeter()
+    PSNR = AverageMeter()
 
-	torch.cuda.empty_cache()
+    torch.cuda.empty_cache()
 
-	network.eval()
+    network.eval()
+    first_batch = True
+    for batch in val_loader:
+        source_img = batch['source'].cuda()
+        target_img = batch['target'].cuda()
+        with torch.no_grad():  # torch.no_grad() may cause warning
+            output = network(source_img).clamp_(-1, 1)
 
-	for batch in val_loader:
-		source_img = batch['source'].cuda()
-		target_img = batch['target'].cuda()
+        if first_batch:
+            hazed_images = wandb.Image(source_img, caption="Hazed Images")
+            dehazed_images = wandb.Image(output, caption="DeHazed Images")
+            target_images = wandb.Image(target_img, caption="DeHazed Images")
+            wandb.log({"hazed": hazed_images, "dehazed": dehazed_images, "GT": target_images})
+            first_batch = False
 
-		with torch.no_grad():							# torch.no_grad() may cause warning
-			output = network(source_img).clamp_(-1, 1)		
-
-		mse_loss = F.mse_loss(output * 0.5 + 0.5, target_img * 0.5 + 0.5, reduction='none').mean((1, 2, 3))
-		wandb.log({"val_mse_loss": mse_loss})
-		psnr = 10 * torch.log10(1 / mse_loss).mean()
-		PSNR.update(psnr.item(), source_img.size(0))
-		wandb.log({"val_psnr": psnr})
-	return PSNR.avg
+        mse_loss = F.mse_loss(output * 0.5 + 0.5, target_img * 0.5 + 0.5, reduction='none').mean((1, 2, 3))
+        psnr = 10 * torch.log10(1 / mse_loss).mean()
+        PSNR.update(psnr.item(), source_img.size(0))
+    return PSNR.avg
 
 
 if __name__ == '__main__':
-	setting_filename = os.path.join('configs', args.exp, args.model+'.json')
-	if not os.path.exists(setting_filename):
-		setting_filename = os.path.join('configs', args.exp, 'default.json')
-	with open(setting_filename, 'r') as f:
-		setting = json.load(f)
-	wandb.config = setting
-	network = eval(args.model.replace('-', '_'))()
-	wandb.watch(network)
-	network = nn.DataParallel(network).cuda()
+    setting_filename = os.path.join('configs', args.exp, args.model + '.json')
+    if not os.path.exists(setting_filename):
+        setting_filename = os.path.join('configs', args.exp, 'default.json')
+    with open(setting_filename, 'r') as f:
+        setting = json.load(f)
+    wandb.config = setting
+    network = eval(args.model.replace('-', '_'))()
+    wandb.watch(network, log="all", log_freq=10000, log_graph=True)
+    network = nn.DataParallel(network).cuda()
 
-	criterion = nn.L1Loss()
+    criterion = nn.L1Loss()
 
-	if setting['optimizer'] == 'adam':
-		optimizer = torch.optim.Adam(network.parameters(), lr=setting['lr'])
-	elif setting['optimizer'] == 'adamw':
-		optimizer = torch.optim.AdamW(network.parameters(), lr=setting['lr'])
-	else:
-		raise Exception("ERROR: unsupported optimizer") 
+    if setting['optimizer'] == 'adam':
+        optimizer = torch.optim.Adam(network.parameters(), lr=setting['lr'])
+    elif setting['optimizer'] == 'adamw':
+        optimizer = torch.optim.AdamW(network.parameters(), lr=setting['lr'])
+    else:
+        raise Exception("ERROR: unsupported optimizer")
 
-	scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=setting['epochs'], eta_min=setting['lr'] * 1e-2)
-	scaler = GradScaler()
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=setting['epochs'],
+                                                           eta_min=setting['lr'] * 1e-2)
+    scaler = GradScaler()
 
-	dataset_dir = os.path.join(args.data_dir, args.dataset)
-	train_dataset = PairLoader(dataset_dir, 'train', 'train', 
-								setting['patch_size'], setting['edge_decay'], setting['only_h_flip'])
-	train_loader = DataLoader(train_dataset,
+    dataset_dir = os.path.join(args.data_dir, args.dataset)
+    train_dataset = PairLoader(dataset_dir, 'train', 'train',
+                               setting['patch_size'], setting['edge_decay'], setting['only_h_flip'])
+    train_loader = DataLoader(train_dataset,
                               batch_size=setting['batch_size'],
                               shuffle=True,
                               num_workers=args.num_workers,
                               pin_memory=True,
                               drop_last=True)
-	val_dataset = PairLoader(dataset_dir, 'test', setting['valid_mode'], 
-							  setting['patch_size'])
-	val_loader = DataLoader(val_dataset,
+    val_dataset = PairLoader(dataset_dir, 'test', setting['valid_mode'],
+                             setting['patch_size'])
+    val_loader = DataLoader(val_dataset,
                             batch_size=setting['batch_size'],
                             num_workers=args.num_workers,
                             pin_memory=True)
 
-	save_dir = os.path.join(args.save_dir, args.exp)
-	os.makedirs(save_dir, exist_ok=True)
+    save_dir = os.path.join(args.save_dir, args.exp)
+    os.makedirs(save_dir, exist_ok=True)
 
-	if not os.path.exists(os.path.join(save_dir, args.model+'.pth')):
-		print('==> Start training, current model name: ' + args.model)
-		# print(network)
+    if not os.path.exists(os.path.join(save_dir, args.model + '.pth')):
+        print('==> Start training, current model name: ' + args.model)
+        # print(network)
 
-		writer = SummaryWriter(log_dir=os.path.join(args.log_dir, args.exp, args.model))
+        writer = SummaryWriter(log_dir=os.path.join(args.log_dir, args.exp, args.model))
 
-		best_psnr = 0
-		for epoch in tqdm(range(setting['epochs'] + 1)):
-			loss = train(train_loader, network, criterion, optimizer, scaler)
+        best_psnr = 0
+        for epoch in tqdm(range(setting['epochs'] + 1)):
+            loss = train(train_loader, network, criterion, optimizer, scaler)
+            loggs = {"train_loss": loss}
 
-			writer.add_scalar('train_loss', loss, epoch)
+            scheduler.step()
 
-			scheduler.step()
+            if epoch % setting['eval_freq'] == 0:
+                avg_psnr = valid(val_loader, network)
+                loggs["valid_psnr"] = avg_psnr
+                if avg_psnr > best_psnr:
+                    best_psnr = avg_psnr
+                    torch.save({'state_dict': network.state_dict()},
+                               os.path.join(save_dir, args.model + '.pth'))
+                loggs["best_psnr"] = best_psnr
+            wandb.log(loggs)
 
-			if epoch % setting['eval_freq'] == 0:
-				avg_psnr = valid(val_loader, network)
-				
-				writer.add_scalar('valid_psnr', avg_psnr, epoch)
-
-				if avg_psnr > best_psnr:
-					best_psnr = avg_psnr
-					torch.save({'state_dict': network.state_dict()},
-                			   os.path.join(save_dir, args.model+'.pth'))
-				
-				writer.add_scalar('best_psnr', best_psnr, epoch)
-
-	else:
-		print('==> Existing trained model')
-		exit(1)
+    else:
+        print('==> Existing trained model')
+        exit(1)
