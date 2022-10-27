@@ -158,5 +158,6 @@ if __name__ == '__main__':
             wandb.log(loggs)
 
     else:
+        print("Adding color space")
         print('==> Existing trained model')
         exit(1)
