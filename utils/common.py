@@ -45,9 +45,16 @@ class ListAverageMeter(object):
 			self.avg[i] = self.sum[i] / self.count
 			
 
-def read_img(filename):
+def read_img(filename, quadruple_space=False):
 	img = cv2.imread(filename)
-	return img[:, :, ::-1].astype('float32') / 255.0
+	if quadruple_space:
+		hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+		ycc = cv2.cvtColor(img, cv2.COLOR_BGR2YCR_CB)
+		lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
+		img = np.concatenate([img[:, :, ::-1], hsv, ycc, lab], axis=-1)
+	else:
+		img = img[:, :, ::-1]
+	return img.astype('float32') / 255.0
 
 
 def write_img(filename, img):
