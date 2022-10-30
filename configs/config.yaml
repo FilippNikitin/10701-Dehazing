@@ -1,24 +1,36 @@
 trainer:
-  params:
-    max_epochs: 1000
-    progress_bar_refresh_rate: 20
-  wandb_project: "10701"
+  max_epochs: 1000
+  #fast_dev_run: 5
+  default_root_dir: "workdir"
+  log_every_n_steps: 1
+  batch_size: 8
+
+wandb:
+  project: "Image Dehazing"
+  name: "color_space_lightning"
 
 model:
-  module_name: Dehazeformer
+  module_name: DehazeFormer
   params:
     in_chans: 12
     out_chans: 13
-    embed_dims: [24, 48, 96, 48, 24],
-    mlp_ratios: [2., 4., 4., 2., 2.],
-    depths: [4, 4, 4, 2, 2],
-    num_heads: [2, 4, 6, 1, 1],
-    attn_ratio: [0, 1 / 2, 1, 0, 0],
-    conv_type: ['DWConv', 'DWConv', 'DWConv', 'DWConv', 'DWConv']
+    embed_dims: [ 24, 48, 96, 48, 24 ]
+    mlp_ratios: [ 2., 4., 4., 2., 2. ]
+    depths: [ 4, 4, 4, 2, 2 ]
+    num_heads: [ 2, 4, 6, 1, 1 ]
+    attn_ratio: [ 0, 0.5, 1, 0, 0 ]
+    conv_type: [ 'DWConv', 'DWConv', 'DWConv', 'DWConv', 'DWConv' ]
 
 metrics:
-  PSNR: torchmetrics.PeakSignalNoiseRatio
-  SSIM: torchmetrics.StructuralSimilarityIndexMeasure
+  PSNR:
+    module: torchmetrics.PeakSignalNoiseRatio
+    params:
+      data_range: 1.
+      dim: [ 1, 2, 3 ]
+  SSIM:
+    module: torchmetrics.StructuralSimilarityIndexMeasure
+    params:
+      data_range: 1.
 
 criterion:
   L1:
@@ -30,16 +42,16 @@ criterion:
 
 datasets:
   train_dataset_params:
-    root_dir: "./data/.."
-    mode: "train",
+    root_dir: "./data/RESIDE-6K/train/"
+    mode: "train"
     size: 256
     edge_decay: 0
     only_h_flip: False
     quadruple_color_space: True
 
   validation_dataset_params:
-    root_dir: "./data/.."
-    mode: "valid",
+    root_dir: "./data/RESIDE-6K/test/"
+    mode: "valid"
     size: 256
     edge_decay: 0
     only_h_flip: False
@@ -48,8 +60,8 @@ datasets:
 optimization:
   optimizer_module_name: torch.optim.Adam
   optimizer_params:
-    lr: 2e-4
+    lr: 0.0002
   scheduler_module_name: torch.optim.lr_scheduler.CosineAnnealingLR
-  schduler_params:
+  scheduler_params:
     T_max: 1000
-    eta_min: 2e-5
+    eta_min: 0.000002

@@ -60,7 +60,7 @@ class PairLoader(Dataset):
         self.edge_decay = edge_decay
         self.only_h_flip = only_h_flip
 
-        self.root_dir = os.path.join(data_dir, sub_dir)
+        self.root_dir = root_dir
         self.img_names = sorted(os.listdir(os.path.join(self.root_dir, 'GT')))
         self.img_num = len(self.img_names)
         self.quadruple_color_space = quadruple_color_space
