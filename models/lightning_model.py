@@ -42,6 +42,8 @@ class LitDehazeformer(pl.LightningModule):
             metrics[metric] = eval(metrics[metric]["module"])(**metrics[metric]["params"])
         metrics = nn.ModuleDict(metrics)
         self.metrics = metrics
+        self.best_metrics = {key: 0 for key in metrics}
+        self.epoch_log = {}
 
     def training_step(self, batch, batch_idx):
         source_img = batch["source"]
@@ -49,8 +51,17 @@ class LitDehazeformer(pl.LightningModule):
 
         output = self.network(source_img)
         loss = self.criterion(output, target_img)
-        self.log("train_loss", loss, on_step=False, on_epoch=True)
+        # self.log("train_loss", loss, on_step=False, on_epoch=True)
         return loss
+
+    def training_epoch_end(self, training_step_outs):
+        losses = [i["loss"] for i in training_step_outs]
+        loss = torch.mean(torch.stack(losses))
+        if self.epoch_log is not {}:
+            self.epoch_log["loss"] = loss
+            wandb.log(self.epoch_log)
+        else:
+            self.epoch_log["loss"] = loss
 
     def validation_step(self, batch, batch_idx):
         source_img = batch["source"]
@@ -68,8 +79,33 @@ class LitDehazeformer(pl.LightningModule):
         result = {}
         for metric_name in self.metrics:
             result[metric_name] = self.metrics[metric_name](output, target_img)
-        self.log_dict(result, on_step=False, on_epoch=True)
+        # self.log_dict(result, on_step=False, on_epoch=True)
         return result
+
+    def validation_epoch_end(self, validation_step_outs):
+        result = {}
+
+        for val_out in validation_step_outs:
+            for key in val_out:
+                if key in result:
+                    result[key].append(val_out[key])
+                else:
+                    result[key] = [val_out[key], ]
+        for key in result:
+            result[key] = torch.mean(torch.stack(result[key]))
+
+        for key in self.best_metrics:
+            if result[key] > self.best_metrics[key]:
+                self.best_metrics[key] = result[key]
+            # todo: redo all of the staff bellow
+            metric_name = key.split("_")[-1]
+            result[f"best_{metric_name}"] = self.best_metrics[key]
+
+        if self.epoch_log is not {}:
+            log = {**self.epoch_log, **result}
+            wandb.log(log)
+        else:
+            self.epoch_log = result
 
     def test_step(self, batch, batahc_idx):
         return self.validation_step(batch, batahc_idx)

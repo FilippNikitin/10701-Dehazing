@@ -1,13 +1,15 @@
 trainer:
   max_epochs: 1000
-  #fast_dev_run: 5
+  fast_dev_run: 5
   default_root_dir: "workdir"
   log_every_n_steps: 1
   batch_size: 8
+  accelerator: "gpu"
 
 wandb:
   project: "Image Dehazing"
-  name: "color_space_lightning"
+  run_name: "color_space_lightning"
+  entity: "10701"
 
 model:
   module_name: DehazeFormer
@@ -22,12 +24,12 @@ model:
     conv_type: [ 'DWConv', 'DWConv', 'DWConv', 'DWConv', 'DWConv' ]
 
 metrics:
-  PSNR:
+  valid_psnr:
     module: torchmetrics.PeakSignalNoiseRatio
     params:
       data_range: 1.
       dim: [ 1, 2, 3 ]
-  SSIM:
+  valid_ssim:
     module: torchmetrics.StructuralSimilarityIndexMeasure
     params:
       data_range: 1.
@@ -35,10 +37,10 @@ metrics:
 criterion:
   L1:
     module_name: nn.L1Loss()
-    weight: 0.5
-  L2:
-    module_name: nn.MSELoss()
-    weight: 0.5
+    weight: 1.
+#  L2:
+#    module_name: nn.MSELoss()
+#    weight: 0.5
 
 datasets:
   train_dataset_params:
