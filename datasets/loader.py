@@ -52,7 +52,7 @@ def align(imgs=[], size=256):
 
 
 class PairLoader(Dataset):
-    def __init__(self, data_dir, sub_dir, mode, size=256, edge_decay=0, only_h_flip=False, quadruple_color_space=False):
+    def __init__(self, root_dir, mode, size=256, edge_decay=0, only_h_flip=False, quadruple_color_space=False):
         assert mode in ['train', 'valid', 'test']
 
         self.mode = mode
