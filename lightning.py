@@ -9,9 +9,7 @@ from models.lightning_model import LitDehazeformer
 
 
 def main(args):
-    config_dict = yaml.load(open(args.config), Loader=yaml.FullLoader)
-    print(config_dict)
-    network_module = config_dict["model"]["module_name"]
+    config_dict = yaml.load(open(args.config), Loader=yaml.FullLoader)    network_module = config_dict["model"]["module_name"]
     network_params = config_dict["model"]["params"]
     optimizer_module = config_dict["optimization"]["optimizer_module_name"]
     optimizer_params = config_dict["optimization"]["optimizer_params"]
@@ -26,7 +24,7 @@ def main(args):
     train_dataset = PairLoader(**config_dict["datasets"]["train_dataset_params"])
     train_loader = DataLoader(train_dataset, batch_size=config_dict["trainer"]["batch_size"],
                               num_workers=8, pin_memory=True)
-    val_dataset = PairLoader(**config_dict["datasets"]["train_dataset_params"])
+    val_dataset = PairLoader(**config_dict["datasets"]["validation_dataset_params"])
     val_loader = DataLoader(val_dataset, batch_size=config_dict["trainer"]["batch_size"], num_workers=2,
                             pin_memory=True)
     wandb.init(
