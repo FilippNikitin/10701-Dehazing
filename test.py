@@ -89,7 +89,9 @@ if __name__ == '__main__':
 	network = eval(args.model.replace('-', '_'))()
 	network.cuda()
 	saved_model_dir = os.path.join(args.save_dir, args.exp, args.model+'.pth')
-
+	setting_filename = os.path.join('configs', args.exp, args.model + '.json')
+	with open(setting_filename, 'r') as f:
+		setting = json.load(f)
 	if os.path.exists(saved_model_dir):
 		print('==> Start testing, current model name: ' + args.model)
 		network.load_state_dict(single(saved_model_dir))
@@ -98,7 +100,7 @@ if __name__ == '__main__':
 		exit(0)
 
 	dataset_dir = os.path.join(args.data_dir, args.dataset)
-	test_dataset = PairLoader(dataset_dir, 'test', 'test')
+	test_dataset = PairLoader(dataset_dir, 'test', 'test', quadruple_color_space=setting["quadruple_color_space"])
 	test_loader = DataLoader(test_dataset,
 							 batch_size=1,
 							 num_workers=args.num_workers,

@@ -9,6 +9,7 @@ from tensorboardX import SummaryWriter
 from torch.cuda.amp import autocast, GradScaler
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+from pytorch_msssim import ssim
 
 from datasets.loader import PairLoader
 from models import *
@@ -50,7 +51,6 @@ def train(train_loader, network, criterion, optimizer, scaler):
     for batch in train_loader:
         source_img = batch['source'].cuda()
         target_img = batch['target'].cuda()
-
         with autocast(args.no_autocast):
             output = network(source_img)
             loss = criterion(output, target_img)
@@ -67,6 +67,7 @@ def train(train_loader, network, criterion, optimizer, scaler):
 
 def valid(val_loader, network):
     PSNR = AverageMeter()
+    SSIM = []
 
     torch.cuda.empty_cache()
 
@@ -79,16 +80,27 @@ def valid(val_loader, network):
             output = network(source_img).clamp_(-1, 1)
 
         if first_batch:
-            hazed_images = wandb.Image(source_img, caption="Hazed Images")
-            dehazed_images = wandb.Image(output, caption="DeHazed Images")
-            target_images = wandb.Image(target_img, caption="DeHazed Images")
+            max_img = 6
+            hazed_images = wandb.Image(source_img[:max_img, :3], caption="Hazed Images")
+            dehazed_images = wandb.Image(output[:max_img, :3], caption="DeHazed Images")
+            target_images = wandb.Image(target_img[:max_img, :3], caption="DeHazed Images")
             wandb.log({"hazed": hazed_images, "dehazed": dehazed_images, "GT": target_images})
             first_batch = False
 
         mse_loss = F.mse_loss(output * 0.5 + 0.5, target_img * 0.5 + 0.5, reduction='none').mean((1, 2, 3))
         psnr = 10 * torch.log10(1 / mse_loss).mean()
+
+        _, _, H, W = output.size()
+        down_ratio = max(1, round(min(H, W) / 256))  # Zhou Wang
+        output = output * 0.5 + 0.5
+        target = target_img * 0.5 + 0.5
+        ssim_val = ssim(F.adaptive_avg_pool2d(output, (int(H / down_ratio), int(W / down_ratio))),
+                        F.adaptive_avg_pool2d(target, (int(H / down_ratio), int(W / down_ratio))),
+                        data_range=1, size_average=False)
+        SSIM.append(ssim_val)
         PSNR.update(psnr.item(), source_img.size(0))
-    return PSNR.avg
+    SSIM_avg = torch.mean(torch.cat(SSIM))
+    return PSNR.avg, SSIM_avg
 
 
 if __name__ == '__main__':
@@ -117,7 +129,8 @@ if __name__ == '__main__':
 
     dataset_dir = os.path.join(args.data_dir, args.dataset)
     train_dataset = PairLoader(dataset_dir, 'train', 'train',
-                               setting['patch_size'], setting['edge_decay'], setting['only_h_flip'])
+                               setting['patch_size'], setting['edge_decay'],
+                               setting['only_h_flip'], setting['quadruple_color_space'])
     train_loader = DataLoader(train_dataset,
                               batch_size=setting['batch_size'],
                               shuffle=True,
@@ -125,7 +138,7 @@ if __name__ == '__main__':
                               pin_memory=True,
                               drop_last=True)
     val_dataset = PairLoader(dataset_dir, 'test', setting['valid_mode'],
-                             setting['patch_size'])
+                             setting['patch_size'], quadruple_color_space=setting['quadruple_color_space'])
     val_loader = DataLoader(val_dataset,
                             batch_size=setting['batch_size'],
                             num_workers=args.num_workers,
@@ -138,9 +151,8 @@ if __name__ == '__main__':
         print('==> Start training, current model name: ' + args.model)
         # print(network)
 
-        writer = SummaryWriter(log_dir=os.path.join(args.log_dir, args.exp, args.model))
-
         best_psnr = 0
+        best_ssim = 0
         for epoch in tqdm(range(setting['epochs'] + 1)):
             loss = train(train_loader, network, criterion, optimizer, scaler)
             loggs = {"train_loss": loss}
@@ -148,15 +160,20 @@ if __name__ == '__main__':
             scheduler.step()
 
             if epoch % setting['eval_freq'] == 0:
-                avg_psnr = valid(val_loader, network)
+                avg_psnr, avg_ssim = valid(val_loader, network)
                 loggs["valid_psnr"] = avg_psnr
+                loggs["valid_ssim"] = avg_ssim
                 if avg_psnr > best_psnr:
                     best_psnr = avg_psnr
                     torch.save({'state_dict': network.state_dict()},
                                os.path.join(save_dir, args.model + '.pth'))
+                if avg_ssim > best_ssim:
+                    best_ssim = avg_ssim
                 loggs["best_psnr"] = best_psnr
+                loggs["best_ssim"] = best_ssim
             wandb.log(loggs)
 
     else:
+        print("Adding color space")
         print('==> Existing trained model')
         exit(1)
