@@ -52,7 +52,7 @@ def align(imgs=[], size=256):
 
 
 class PairLoader(Dataset):
-    def __init__(self, data_dir, sub_dir, mode, size=256, edge_decay=0, only_h_flip=False, quadruple_color_space=False):
+    def __init__(self, root_dir, mode, size=256, edge_decay=0, only_h_flip=False, quadruple_color_space=False):
         assert mode in ['train', 'valid', 'test']
 
         self.mode = mode
@@ -60,7 +60,7 @@ class PairLoader(Dataset):
         self.edge_decay = edge_decay
         self.only_h_flip = only_h_flip
 
-        self.root_dir = os.path.join(data_dir, sub_dir)
+        self.root_dir = root_dir
         self.img_names = sorted(os.listdir(os.path.join(self.root_dir, 'GT')))
         self.img_num = len(self.img_names)
         self.quadruple_color_space = quadruple_color_space
