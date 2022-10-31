@@ -24,9 +24,11 @@ def main(args):
                             optimizer_params, scheduler_module, scheduler_params, metrics)
 
     train_dataset = PairLoader(**config_dict["datasets"]["train_dataset_params"])
-    train_loader = DataLoader(train_dataset, batch_size=config_dict["trainer"]["batch_size"])
+    train_loader = DataLoader(train_dataset, batch_size=config_dict["trainer"]["batch_size"],
+                              num_workers=8, pin_memory=True)
     val_dataset = PairLoader(**config_dict["datasets"]["train_dataset_params"])
-    val_loader = DataLoader(val_dataset, batch_size=config_dict["trainer"]["batch_size"])
+    val_loader = DataLoader(val_dataset, batch_size=config_dict["trainer"]["batch_size"], num_workers=2,
+                            pin_memory=True)
     wandb.init(
         entity=config_dict["wandb"]["entity"],
         settings=wandb.Settings(start_method="fork"),

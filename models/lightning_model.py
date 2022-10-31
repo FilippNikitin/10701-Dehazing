@@ -57,11 +57,12 @@ class LitDehazeformer(pl.LightningModule):
     def training_epoch_end(self, training_step_outs):
         losses = [i["loss"] for i in training_step_outs]
         loss = torch.mean(torch.stack(losses))
-        if self.epoch_log is not {}:
-            self.epoch_log["loss"] = loss
+        if len(self.epoch_log) > 0:
+            self.epoch_log["train_loss"] = loss
             wandb.log(self.epoch_log)
+            self.epoch_log = {}
         else:
-            self.epoch_log["loss"] = loss
+            self.epoch_log["train_loss"] = loss
 
     def validation_step(self, batch, batch_idx):
         source_img = batch["source"]
@@ -101,9 +102,10 @@ class LitDehazeformer(pl.LightningModule):
             metric_name = key.split("_")[-1]
             result[f"best_{metric_name}"] = self.best_metrics[key]
 
-        if self.epoch_log is not {}:
+        if len(self.epoch_log) > 0:
             log = {**self.epoch_log, **result}
             wandb.log(log)
+            self.epoch_log = {}
         else:
             self.epoch_log = result
 
