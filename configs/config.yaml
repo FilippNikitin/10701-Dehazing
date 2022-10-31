@@ -29,10 +29,12 @@ metrics:
     params:
       data_range: 1.
       dim: [ 1, 2, 3 ]
+      reduction: none
   valid_ssim:
     module: torchmetrics.StructuralSimilarityIndexMeasure
     params:
       data_range: 1.
+      reduction: none
 
 criterion:
   L1:

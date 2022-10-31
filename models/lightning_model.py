@@ -68,8 +68,9 @@ class LitDehazeformer(pl.LightningModule):
         source_img = batch["source"]
         target_img = batch["target"]
         # validation only on rgb channels
-        output = self.network(source_img)[:, :3]
-        target_img = target_img[:, :3]
+        # convert [-1, 1] to [0, 1]
+        output = (self.network(source_img)[:, :3] + 1) * 0.5
+        target_img = (target_img[:, :3] + 1) * 0.5
         if batch_idx == 0:
             max_img = 6
             hazed_images = wandb.Image(source_img[:max_img, :3], caption="Hazed Images")
@@ -93,7 +94,7 @@ class LitDehazeformer(pl.LightningModule):
                 else:
                     result[key] = [val_out[key], ]
         for key in result:
-            result[key] = torch.mean(torch.stack(result[key]))
+            result[key] = torch.mean(torch.cat(result[key]))
 
         for key in self.best_metrics:
             if result[key] > self.best_metrics[key]:
