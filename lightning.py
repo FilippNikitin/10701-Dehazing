@@ -9,7 +9,8 @@ from models.lightning_model import LitDehazeformer
 
 
 def main(args):
-    config_dict = yaml.load(open(args.config), Loader=yaml.FullLoader)    network_module = config_dict["model"]["module_name"]
+    config_dict = yaml.load(open(args.config), Loader=yaml.FullLoader)
+    network_module = config_dict["model"]["module_name"]
     network_params = config_dict["model"]["params"]
     optimizer_module = config_dict["optimization"]["optimizer_module_name"]
     optimizer_params = config_dict["optimization"]["optimizer_params"]
