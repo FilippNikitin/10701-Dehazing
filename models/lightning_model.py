@@ -51,18 +51,12 @@ class LitDehazeformer(pl.LightningModule):
 
         output = self.network(source_img)
         loss = self.criterion(output, target_img)
-        # self.log("train_loss", loss, on_step=False, on_epoch=True)
         return loss
 
     def training_epoch_end(self, training_step_outs):
         losses = [i["loss"] for i in training_step_outs]
         loss = torch.mean(torch.stack(losses))
-        if len(self.epoch_log) > 0:
-            self.epoch_log["train_loss"] = loss
-            wandb.log(self.epoch_log)
-            self.epoch_log = {}
-        else:
-            self.epoch_log["train_loss"] = loss
+        self.epoch_log["train_loss"] = loss
 
     def validation_step(self, batch, batch_idx):
         source_img = batch["source"]
@@ -76,12 +70,12 @@ class LitDehazeformer(pl.LightningModule):
             hazed_images = wandb.Image(source_img[:max_img, :3], caption="Hazed Images")
             dehazed_images = wandb.Image(output[:max_img, :3], caption="DeHazed Images")
             target_images = wandb.Image(target_img[:max_img, :3], caption="DeHazed Images")
-            wandb.log({"hazed": hazed_images, "dehazed": dehazed_images, "GT": target_images})
+            log_images = {"hazed": hazed_images, "dehazed": dehazed_images, "GT": target_images}
+            self.epoch_log = {**self.epoch_log, **log_images}
 
         result = {}
         for metric_name in self.metrics:
             result[metric_name] = self.metrics[metric_name](output, target_img)
-        # self.log_dict(result, on_step=False, on_epoch=True)
         return result
 
     def validation_epoch_end(self, validation_step_outs):
@@ -103,12 +97,9 @@ class LitDehazeformer(pl.LightningModule):
             metric_name = key.split("_")[-1]
             result[f"best_{metric_name}"] = self.best_metrics[key]
 
-        if len(self.epoch_log) > 0:
-            log = {**self.epoch_log, **result}
-            wandb.log(log)
-            self.epoch_log = {}
-        else:
-            self.epoch_log = result
+        log = {**self.epoch_log, **result}
+        wandb.log(log)
+        self.epoch_log = {}
 
     def test_step(self, batch, batahc_idx):
         return self.validation_step(batch, batahc_idx)
