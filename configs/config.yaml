@@ -1,6 +1,6 @@
 trainer:
   max_epochs: 1000
-  # fast_dev_run: 5
+  fast_dev_run: 5
   default_root_dir: "workdir"
   batch_size: 16
   accelerator: "gpu"
@@ -8,7 +8,7 @@ trainer:
 
 wandb:
   project: "Image Dehazing"
-  run_name: "color_space_lightning"
+  run_name: "refactoring_test_run"
   entity: "10701"
 
 model:
