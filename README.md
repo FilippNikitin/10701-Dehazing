@@ -16,7 +16,7 @@ great importance in computer vision. In this project, we are focusing on using s
 - The base architecture of DehazeFormer.
 ![DehazeFormer](figs/arch.png)
 - Transformer based semantic segmentation arhitecture - HRNet.
-![HRNet](figs/arch.png)
+![HRNet](figs/seg-hrnet.png)
 
 ## Getting started
 
