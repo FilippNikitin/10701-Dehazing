@@ -1,30 +1,22 @@
-# Vision Transformers for Single Image Dehazing
+# Adverse Weather Image Processing (CMU 10701 Project)
 
 [![paper](https://img.shields.io/badge/arXiv-Paper-<COLOR>.svg)](https://arxiv.org/abs/2204.03883) [![Dataset](https://img.shields.io/badge/GoogleDrive-Dataset-blue)](https://drive.google.com/drive/folders/1oaQSpdYHxEv-nMOB7yCLKfw2NDCJVtrx?usp=sharing) 
 [![Model](https://img.shields.io/badge/GoogleDrive-Weight-blue)](https://drive.google.com/drive/folders/1gnQiI_7Dvy-ZdQUVYXt7pW0EFQkpK39B?usp=sharing)
 [![BaiduPan](https://img.shields.io/badge/BaiduPan-Backup-orange)](https://pan.baidu.com/s/1WVdNccqDMnJ5k5Q__Y2dsg?pwd=gtuw)
 
 > **Abstract:** 
-Image dehazing is a representative low-level vision task that estimates latent haze-free images from hazy images.
-In recent years, convolutional neural network-based methods have dominated image dehazing.
-However, vision Transformers, which has recently made a breakthrough in high-level vision tasks, has not brought new dimensions to image dehazing.
-We start with the popular Swin Transformer and find that several of its key designs are unsuitable for image dehazing.
-To this end, we propose DehazeFormer, which consists of various improvements, such as the modified normalization layer, activation function, and spatial information aggregation scheme.
-We train multiple variants of DehazeFormer on various datasets to demonstrate its effectiveness.
-Specifically, on the most frequently used SOTS indoor set, our small model outperforms FFA-Net with only 25\% \#Param and 5\% computational cost.
-To the best of our knowledge, our large model is the first method with the PSNR over 40 dB on the SOTS indoor set, dramatically outperforming the previous state-of-the-art methods.
-We also collect a large-scale realistic remote sensing dehazing dataset for evaluating the method's capability to remove highly non-homogeneous haze.
+Haze is a common phenomenon that affects the visibility and clarity of natural images. Aerosols
+and adverse weather conditions such as dust, mist, fog, and snow can create haze. In normal day-to-
+day life, this phenomenon can cause wrong object detection and serious traffic security issues. In
+computer vision, a hazy image impacts the quality of analysis and thus results in unreliable high-level
+computer vision applications such as self-driving cars. This is why image de-hazing is considered of
+great importance in computer vision. In this project, we are focusing on using several architectures for image dehazing such as - the swin transformer based DehazeFormer, the multiple color channel based feature map from TheiaNet, and the transformer based sematic segmentation model HRNet.
 
 ### Network Architecture
-
+- The base architecture of DehazeFormer.
 ![DehazeFormer](figs/arch.png)
-
-### News
-
-- **Apr 30, 2022:** Add DehazeFormer-D with 39.43 dB (SOTS indoor) / 4.98M #Param / 51.09G MACs.
-- **Apr 12, 2022:** Add DehazeFormer-W with 39.19 dB (SOTS indoor) / 9.68M #Param / 94.43G MACs. BaiduPan link is updated.
-- **Apr 11, 2022:** Arxiv paper link is updated.
-- **Apr 7, 2022:** Beta version is released, including codes, pre-trained models, and RS-Haze-RGB.
+- Transformer based semantic segmentation arhitecture - HRNet.
+![HRNet](figs/arch.png)
 
 ## Getting started
 
