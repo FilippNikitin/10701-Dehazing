@@ -2,7 +2,9 @@ import pytorch_lightning as pl
 import torch
 import torchmetrics
 import wandb
+
 from torch import nn
+from thop import profile
 
 import models
 
@@ -43,12 +45,14 @@ class LitDehazeformer(pl.LightningModule):
         metrics = nn.ModuleDict(metrics)
         self.metrics = metrics
         self.best_metrics = {key: 0 for key in metrics}
-        self.epoch_log = {}
+        input = torch.randn(1, network_params["in_chans"], 224, 224)
+        macs, params = profile(self.network, inputs=(input, ))
+        logs = {'Computational complexity': macs, 'Number of parameters': params}
+        self.epoch_log = logs
 
     def training_step(self, batch, batch_idx):
         source_img = batch["source"]
         target_img = batch["target"]
-
         output = self.network(source_img)
         loss = self.criterion(output, target_img)
         return loss
@@ -74,6 +78,8 @@ class LitDehazeformer(pl.LightningModule):
             self.epoch_log = {**self.epoch_log, **log_images}
 
         result = {}
+        # todo: understand how the precision works in pytorch lightning
+        target_img = target_img.to(output.dtype)
         for metric_name in self.metrics:
             result[metric_name] = self.metrics[metric_name](output, target_img)
         return result
