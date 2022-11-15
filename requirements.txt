@@ -4,3 +4,5 @@ pytorch-msssim
 timm
 tensorboard
 tensorboardx
+wandb
+pytorch-lightning
