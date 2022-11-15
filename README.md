@@ -45,13 +45,13 @@ We are using one of the most common benchmarking dataset in image dehazing - the
 ### Train
 
 ```sh
-python train.py --model (model name) --dataset (dataset name) --exp (exp name)
+python train.py --model (model name) --dataset (dataset name) --exp (exp name) --wandb --run_name=("run name") --num_workers=(number of worker threads)
 ```
 
 For example, we train the model as - 
 
 ```sh
-python train.py --model dehazeformer-b --dataset RESIDE-IN --exp indoor
+python train.py --model dehazeformer-t --dataset RESIDE-6K --exp reside6k --wandb --run_name="colorspace" --num_workers=2
 ```
 
 We have used WanDB for recording the loss and evaluation performance (PSNR, SSIM) during training.
@@ -59,13 +59,13 @@ We have used WanDB for recording the loss and evaluation performance (PSNR, SSIM
 ### Test
 
 ```sh
-python test.py --model (model name) --dataset (dataset name) --exp (exp name)
+python test.py --model (model name) --dataset (dataset name) --exp (exp name) --wandb --run_name=("run name")
 ```
 
 For example,
 
 ```sh
-python test.py --model dehazeformer-b --dataset RESIDE-IN --exp indoor
+python test.py --model dehazeformer-t --dataset RESIDE-6K --exp reside6k --wandb --run_name="colorspace" 
 ```
 
 Main test scripts can be found in `run.sh`.
