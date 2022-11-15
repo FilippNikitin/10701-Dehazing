@@ -40,6 +40,12 @@ pip install -r requirements.txt
 
 We are using one of the most common benchmarking dataset in image dehazing - the [RESIDE](https://sites.google.com/view/reside-dehaze-datasets/reside-%CE%B2?authuser=0) dataset. The RESIDE dataset has three versions — RESIDE-V 0, RESIDE-standard, and RESIDE-β. IAs we want to compare our modified architecture and loss functions with the base architectures, we will be using the RESIDE-6k dataset, which used a combination of 3000 indoor image pairs (ITS) and 3000 outdoor image pairs (OTS) for training and 1000 images from synthetic outdoor images (SOTS) for testing. 
 
+### Implemented methods
+- Quadruple color space: Combining the RGB, HSV, YCbCr, Lab colorspaces.
+- Implementation of SSIM evaluation metric.
+- Different loss function.
+- Implementation of HRNet architecture.
+
 ## Training and Evaluation
 
 ### Train
