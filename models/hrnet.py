@@ -33,6 +33,8 @@ import torch._utils
 import torch.nn as nn
 import torch.nn.functional as F
 
+from .modules.transformer_block import GeneralTransformerBlock
+
 
 BatchNorm2d_class = BatchNorm2d = torch.nn.BatchNorm2d
 relu_inplace = True
@@ -270,6 +272,7 @@ class HighResolutionModule(nn.Module):
 
 blocks_dict = {
     'BASIC': BasicBlock,
+    'TRANSFORMER_BLOCK': GeneralTransformerBlock,
     'BOTTLENECK': Bottleneck
 }
 
@@ -432,7 +435,7 @@ class HighResolutionNet(nn.Module):
         return nn.Sequential(*modules), num_inchannels
 
     def forward(self, x):
-        initial_x = x
+        initial_x = torch.clone(x)
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)
@@ -481,7 +484,7 @@ class HighResolutionNet(nn.Module):
 
         x = self.last_layer(x)
         initial_x += x
-        return x
+        return initial_x
 
     def init_weights(self, ):
         logger.info('=> init weights from normal distribution')
