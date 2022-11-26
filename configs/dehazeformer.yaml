@@ -8,18 +8,20 @@ trainer:
 
 wandb:
   project: "Image Dehazing"
-  run_name: "small_esdnet"
+  run_name: "tiny_dehazeformer"
   entity: "10701"
 
 model:
-  module_name: ESDNet
+  module_name: DehazeFormer
   params:
     in_chans: 3
-    en_feature_num: 24
-    en_inter_num: 16
-    de_feature_num: 32
-    de_inter_num: 16
-    sam_number: 1
+    out_chans: 4
+    embed_dims: [ 24, 48, 96, 48, 24 ]
+    mlp_ratios: [ 2., 4., 4., 2., 2. ]
+    depths: [ 4, 4, 4, 2, 2 ]
+    num_heads: [ 2, 4, 6, 1, 1 ]
+    attn_ratio: [ 0, 0.5, 1, 0, 0 ]
+    conv_type: [ 'DWConv', 'DWConv', 'DWConv', 'DWConv', 'DWConv' ]
 
 metrics:
   valid_psnr:

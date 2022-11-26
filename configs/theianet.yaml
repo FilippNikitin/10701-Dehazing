@@ -1,6 +1,6 @@
 trainer:
   max_epochs: 1000
-  # fast_dev_run: 5
+  #fast_dev_run: 5
   default_root_dir: "workdir"
   batch_size: 16
   accelerator: "gpu"
@@ -8,18 +8,17 @@ trainer:
 
 wandb:
   project: "Image Dehazing"
-  run_name: "small_esdnet"
+  run_name: "theianet"
   entity: "10701"
 
 model:
-  module_name: ESDNet
+  module_name: TheiaNet
   params:
     in_chans: 3
-    en_feature_num: 24
-    en_inter_num: 16
-    de_feature_num: 32
-    de_inter_num: 16
-    sam_number: 1
+    encoder_feats: 32
+    enhuncer_feats: 64
+    decoder_feats: 32
+    head_feats: 16
 
 metrics:
   valid_psnr:
