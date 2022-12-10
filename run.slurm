@@ -29,7 +29,8 @@ if [[ -e $SCRDIR/saved_models ]]; then
 fi
 
 cd ${SCRDIR}
-conda run --live-stream -n pt1102 python -u lightning.py configs/theianet.yaml
+module load cuda
+conda run --live-stream -n pt1102 python -u lightning.py configs/hrtransformer.yaml
 
 rsync -rv -q $SCRDIR/ $SLURM_SUBMIT_DIR
 rm -rf ${SCRDIR}

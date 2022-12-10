@@ -38,12 +38,16 @@ def main(args):
     wandb.watch(model.network, log="all", log_freq=10000, log_graph=True)
     del config_dict["trainer"]["batch_size"]
     trainer = Trainer(**config_dict["trainer"])
-    trainer.fit(model, train_loader, val_loader)
-
+    if args.test:
+        trainer.test(model, ckpt_path=args.ckpt_path, dataloaders=val_loader)
+    else:
+        trainer.fit(model, train_loader, val_loader)
 
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("config", default=None)
-    args = parser.parse_args()
+    parser.add_argument("--test", action='store_true')
+    parser.add_argument("--ckpt_path", default=None)
 
+    args = parser.parse_args()
     main(args)
