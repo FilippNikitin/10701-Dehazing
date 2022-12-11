@@ -58,23 +58,98 @@ python lightning.py configs/theianet.yaml --test --ckpt_path="your_checkpoint.ck
 
 ### Dataset
 
-We are using one of the most common benchmarking dataset in image dehazing - 
-the [RESIDE](https://sites.google.com/view/reside-dehaze-datasets/reside-%CE%B2?authuser=0) dataset. The RESIDE dataset
-has three versions — RESIDE-V 0, RESIDE-standard, and RESIDE-β. IAs we want to compare our modified architecture and 
-loss functions with the base architectures, we will be using the RESIDE-6k dataset, which used a combination of 3000 
-indoor image pairs (ITS) and 3000 outdoor image pairs (OTS) for training and 1000 images from synthetic outdoor images 
-(SOTS) for testing.
+We are using one of the most common benchmarking dataset in image dehazing —
+the [RESIDE](https://sites.google.com/view/reside-dehaze-datasets/reside-%CE%B2?authuser=0)
+dataset. The RESIDE dataset has three versions — RESIDE-V 0, RESIDE-standard, and RESIDE-β.
+IAs we want to compare our modified architecture and loss functions with the base 
+architectures, we will be using the RESIDE-6k dataset, which used a combination of 3000 
+indoor image pairs (ITS) and 3000 outdoor image pairs (OTS) for training and 1000 images
+from synthetic outdoor images (SOTS) for testing.
+
+We did not use other datasets because the experiments is computationally intense, so we decided 
+to focus on comparing different architectures on one dataset. 
 
 ## Architectures
 
+### DehazeFormer
+
+We chose Dehazeformer architecture as our initial architecture for several reasons.
+- According to the paperswithcode id demonstrated the best performance on the well known
+datasets
+- It utilizes the idea of U-net and visions transformers, which are very poverful 
+in multiple computer vison tasks (object detectin, semantic segmentation, etc)
+- There was an open code for the paper, so It was a great starting point
+
+<center>
+<figure>
+<img src="figs/arch.png" alt="drawing" width="300"/>
+<figcaption>The DehazeFormer architecture: general U-Net structure and the structure 
+of the block</figcaption>
+</figure>
+</center>
 
 
-### Network Architecture
-- The base architecture of DehazeFormer.
-![DehazeFormer](figs/arch.png)
-- Transformer based semantic segmentation arhitecture - HRNet.
-![HRNet](figs/seg-hrnet.png)
+### HRNet and HRTransformer
 
+Since U-Net and HRNet both used for semantic segmentation (imge-to-image), we added it to 
+our project.
+
+- HRNet outperformed standard U-Net and later DeepLabv3 on semantic segmentation models
+- The key difference from standard U-Net is using feature pyramid pooling (FPN) and cross
+level connections
+- HRTransformer utilizes the same idea but uses Transformer modules instead of convolutional
+ones
+
+<center>
+<figure>
+<img src="figs/seg-hrnet.png" alt="drawing" width="600"/>
+<figcaption>The HRNet architecture: FPN allows the NN to combine features from different
+levels</figcaption>
+</figure>
+</center>
+
+### A-HRNet
+- ToDo
+
+### ESDNet
+
+The ESDNet is SotA architecture for Image Demoiréing problem, which we found very similar. 
+
+- It uses scale aware modules (SAM) to handle moir´e (haze in our case) patterns with diverse scales. 
+It uses a pyramid context extraction module to effectively and efficiently extract multiscale features.
+- ESDNet adopts a simple encoder-decoder  network with skip-connections as its backbone and stacks SAM at different 
+semantic levels
+- ESDNet can be very efficient on hardware
+
+<center>
+<figure>
+<img src="figs/esdnet.png" alt="drawing" width="300"/>
+<figcaption> </figcaption>
+</figure>
+</center>
+
+
+### TheiaNet
+
+A very fast and efficient TheiaNet architecture was build for the dehazing problem
+- TheiaNet enables haze removal in a highly resource constrained environments
+- Uses quadruple color space (RGB, HSV, LAB, YCbCr)
+- More efficient than other models (CNN, GANs, Transformers)
+- The simplicity of the network is augmented
+- Uses the similar idea with FPN
+
+<center>
+<figure>
+<img src="figs/theianet.png" alt="drawing" width="300"/>
+<figcaption> TheiaNet is a fast and optimized architecture for image dehazing </figcaption>
+</figure>
+</center>
+
+## Model's training
+ - ToDo: Add learning graphs
+
+## Complexity comparison
+- ToDo: Add Complexity comparison
 
 
 
