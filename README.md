@@ -86,7 +86,7 @@ in multiple computer vison tasks (object detectin, semantic segmentation, etc)
 - There was an open code for the paper, so It was a great starting point
 
 <figure>
-<img src="figs/arch.png" alt="drawing" width="300"/>
+<img src="figs/arch.png" alt="drawing" width=80%/>
 <figcaption>The DehazeFormer architecture: general U-Net structure and the structure 
 of the block</figcaption>
 </figure>
@@ -104,7 +104,7 @@ level connections
 ones
 
 <figure>
-<img src="figs/seg-hrnet.png" alt="drawing" width="600"/>
+<img src="figs/seg-hrnet.png" alt="drawing" width=100%/>
 <figcaption>The HRNet architecture: FPN allows the NN to combine features from different
 levels</figcaption>
 </figure>
@@ -123,7 +123,7 @@ semantic levels
 - ESDNet can be very efficient on hardware
 
 <figure>
-<img src="figs/esdnet.png" alt="drawing" width="300"/>
+<img src="figs/esdnet.png" alt="drawing" width=80%/>
 <figcaption> </figcaption>
 </figure>
 
@@ -139,7 +139,7 @@ A very fast and efficient TheiaNet architecture was build for the dehazing probl
 
 
 <figure>
-<img src="figs/theianet.png" alt="drawing" width="300"/>
+<img src="figs/theianet.png" alt="drawing" width=80%/>
 <figcaption> TheiaNet is a fast and optimized architecture for image dehazing </figcaption>
 </figure>
 
@@ -147,13 +147,13 @@ A very fast and efficient TheiaNet architecture was build for the dehazing probl
 The learning curves for different models are presented on the next graphs:
 
 <figure>
-<img src="figs/ssim.png" alt="drawing" width="300"/>
+<img src="figs/ssim.png" alt="drawing" width=80%/>
 <figcaption> SSIM score for different models: ESDNet is the best model according to the score
 </figcaption>
 </figure>
 
 <figure>
-<img src="figs/psnr.png" alt="drawing" width="300"/>
+<img src="figs/psnr.png" alt="drawing" width=80%/>
 <figcaption> PSNR score for different models: DehazeFormer and ESDNet are 
 ate the top</figcaption>
 </figure>
@@ -165,12 +165,12 @@ which fit one GPU. Here we demonstrate what is the compuational complexity and
 the number of parameters for different models. 
 
 <figure>
-<img src="figs/complexity.png" alt="drawing" width="300"/>
+<img src="figs/complexity.png" alt="drawing" width=80%/>
 <figcaption> Compuational complexity of the models</figcaption>
 </figure>
 
 <figure>
-<img src="figs/params.png" alt="drawing" width="300"/>
+<img src="figs/params.png" alt="drawing" width=80%/>
 <figcaption> Number of parameters of the models</figcaption>
 </figure>
 
