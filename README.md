@@ -31,6 +31,7 @@ great importance in computer vision. In this project, we are focusing on using s
 - [x] A-HRNet
 - [x] TheiaNet
 - [x] ESDNet
+
 **Writing**:
 - [x] Proposal
 - [x] Midway report
