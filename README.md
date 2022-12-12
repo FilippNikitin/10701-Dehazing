@@ -31,6 +31,10 @@ great importance in computer vision. In this project, we are focusing on using s
 - [x] A-HRNet
 - [x] TheiaNet
 - [x] ESDNet
+**Writing**:
+- [x] Proposal
+- [x] Midway report
+- [ ] Final report
 
 ## Installation and usage
 
@@ -80,13 +84,11 @@ datasets
 in multiple computer vison tasks (object detectin, semantic segmentation, etc)
 - There was an open code for the paper, so It was a great starting point
 
-<center>
 <figure>
 <img src="figs/arch.png" alt="drawing" width="300"/>
 <figcaption>The DehazeFormer architecture: general U-Net structure and the structure 
 of the block</figcaption>
 </figure>
-</center>
 
 
 ### HRNet and HRTransformer
@@ -100,13 +102,11 @@ level connections
 - HRTransformer utilizes the same idea but uses Transformer modules instead of convolutional
 ones
 
-<center>
 <figure>
 <img src="figs/seg-hrnet.png" alt="drawing" width="600"/>
 <figcaption>The HRNet architecture: FPN allows the NN to combine features from different
 levels</figcaption>
 </figure>
-</center>
 
 ### A-HRNet
 - ToDo
@@ -121,12 +121,10 @@ It uses a pyramid context extraction module to effectively and efficiently extra
 semantic levels
 - ESDNet can be very efficient on hardware
 
-<center>
 <figure>
 <img src="figs/esdnet.png" alt="drawing" width="300"/>
 <figcaption> </figcaption>
 </figure>
-</center>
 
 
 ### TheiaNet
@@ -138,23 +136,44 @@ A very fast and efficient TheiaNet architecture was build for the dehazing probl
 - The simplicity of the network is augmented
 - Uses the similar idea with FPN
 
-<center>
+
 <figure>
 <img src="figs/theianet.png" alt="drawing" width="300"/>
 <figcaption> TheiaNet is a fast and optimized architecture for image dehazing </figcaption>
 </figure>
-</center>
 
 ## Model's training
- - ToDo: Add learning graphs
+The learning curves for different models are presented on the next graphs:
+
+<figure>
+<img src="figs/ssim.png" alt="drawing" width="300"/>
+<figcaption> SSIM score for different models: ESDNet is the best model according to the score
+</figcaption>
+</figure>
+
+<figure>
+<img src="figs/psnr.png" alt="drawing" width="300"/>
+<figcaption> PSNR score for different models: DehazeFormer and ESDNet are 
+ate the top</figcaption>
+</figure>
+
 
 ## Complexity comparison
-- ToDo: Add Complexity comparison
+Due to limited computational resourse we target to compare resonably small models, 
+which fit one GPU. Here we demonstrate what is the compuational complexity and 
+the number of parameters for different models. 
 
+<figure>
+<img src="figs/complexity.png" alt="drawing" width="300"/>
+<figcaption> Compuational complexity of the models</figcaption>
+</figure>
+
+<figure>
+<img src="figs/params.png" alt="drawing" width="300"/>
+<figcaption> Number of parameters of the models</figcaption>
+</figure>
 
 
 ## Notes
 Currently, the code of this repository is under development. We will be updating architectures as we implement 
 them as part of our project.
-
-
