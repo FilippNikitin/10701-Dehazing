@@ -81,8 +81,8 @@ to focus on comparing different architectures on one dataset.
 We chose Dehazeformer architecture as our initial architecture for several reasons.
 - According to the paperswithcode id demonstrated the best performance on the well known
 datasets
-- It utilizes the idea of U-net and visions transformers, which are very poverful 
-in multiple computer vison tasks (object detectin, semantic segmentation, etc)
+- It utilizes the idea of U-net and vision transformers, which are very powerful 
+in multiple computer vision tasks (object detection, semantic segmentation, etc.).
 - There was an open code for the paper, so It was a great starting point
 
 <figure>
@@ -94,7 +94,7 @@ of the block</figcaption>
 
 ### HRNet and HRTransformer
 
-Since U-Net and HRNet both used for semantic segmentation (imge-to-image), we added it to 
+Since U-Net and HRNet both used for semantic segmentation (image-to-image), we added it to 
 our project.
 
 - HRNet outperformed standard U-Net and later DeepLabv3 on semantic segmentation models
