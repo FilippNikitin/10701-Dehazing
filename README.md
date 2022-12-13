@@ -92,7 +92,7 @@ of the block</figcaption>
 </figure>
 
 
-### HRNet and HRTransformer
+### HRNet, HRTransformer and A-HRNet
 
 Since U-Net and HRNet both used for semantic segmentation (image-to-image), we added it to 
 our project.
@@ -102,6 +102,7 @@ our project.
 level connections
 - HRTransformer utilizes the same idea but uses Transformer modules instead of convolutional
 ones
+- A-HRNet also works on the baseline HRNet architecture and implements the dual attention (DA) module to capture long-range contexual information.
 
 <figure>
 <img src="figs/seg-hrnet.png" alt="drawing" width=100%/>
@@ -109,8 +110,7 @@ ones
 levels</figcaption>
 </figure>
 
-### A-HRNet
-- ToDo
+
 
 ### ESDNet
 
